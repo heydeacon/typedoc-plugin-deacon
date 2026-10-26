@@ -52,6 +52,14 @@ describe('@heydeacon/typedoc-plugin', () => {
     );
   });
 
+  it('holds back page views with the data-no-page-views attribute', async () => {
+    const { pages } = await generateDocs({ deaconKey: 'pk_test123', deaconPageViews: false });
+
+    expect(loaderTagsInHead(pages.get('index.html') ?? '')).toEqual([
+      '<script src="https://heydeacon.com/widget/v1/loader.js" data-key="pk_test123" data-no-page-views async></script>',
+    ]);
+  });
+
   it.each([
     ['a string', 'plan=pro'],
     ['an array', ['docs']],

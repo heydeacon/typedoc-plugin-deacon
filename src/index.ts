@@ -11,6 +11,7 @@ declare module 'typedoc' {
   export interface TypeDocOptionMap {
     deaconKey: string;
     deaconContext: ManuallyValidatedOption<DeaconContext | undefined>;
+    deaconPageViews: boolean;
   }
 }
 
@@ -38,10 +39,13 @@ function escapeAttribute(value: string): string {
     .replaceAll('>', '&gt;');
 }
 
-/** The tag Install gives, with any of its other attributes between the key and async. */
-function loaderTag(attributes: Record<string, string>): string {
+/**
+ * The tag Install gives, with any of its other attributes between the key and async. An
+ * attribute that is `true` is written with no value, as `async` is.
+ */
+function loaderTag(attributes: Record<string, string | true>): string {
   const rendered = Object.entries(attributes)
-    .map(([name, value]) => ` ${name}="${escapeAttribute(value)}"`)
+    .map(([name, value]) => (value === true ? ` ${name}` : ` ${name}="${escapeAttribute(value)}"`))
     .join('');
 
   return `<script src="${LOADER_SRC}"${rendered} async></script>`;
@@ -72,6 +76,15 @@ export function load(app: Application): void {
     },
   });
 
+  app.options.addDeclaration({
+    name: 'deaconPageViews',
+    help:
+      'Set to false to send Deacon no page views or JavaScript errors from these pages. Chat ' +
+      'still works.',
+    type: ParameterType.Boolean,
+    defaultValue: true,
+  });
+
   let tag = '';
 
   // Every option has been read by now. An error here stops the typedoc command before it
@@ -90,10 +103,12 @@ export function load(app: Application): void {
     }
 
     const context = app.options.getValue('deaconContext');
+    const pageViews = app.options.getValue('deaconPageViews');
 
     tag = loaderTag({
       'data-key': key,
       ...(context === undefined ? {} : { 'data-context': JSON.stringify(context) }),
+      ...(pageViews ? {} : { 'data-no-page-views': true }),
     });
   });
 
