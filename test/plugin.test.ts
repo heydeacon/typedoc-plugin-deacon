@@ -41,6 +41,17 @@ describe('@heydeacon/typedoc-plugin', () => {
     ]);
   });
 
+  it('keeps a context value that looks like HTML as it was written', async () => {
+    const { pages } = await generateDocs({
+      deaconKey: 'pk_test123',
+      deaconContext: { note: '</script><b>"hi" &amp;</b>' },
+    });
+
+    expect(loaderAttributesInHead(pages.get('index.html') ?? '')[0]?.['data-context']).toBe(
+      '{"note":"</script><b>\\"hi\\" &amp;</b>"}',
+    );
+  });
+
   it.each([
     ['missing', {}],
     ['empty, as from an unset environment variable', { deaconKey: '' }],
