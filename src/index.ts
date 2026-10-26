@@ -11,7 +11,7 @@ declare module 'typedoc' {
   export interface TypeDocOptionMap {
     deaconKey: string;
     deaconContext: ManuallyValidatedOption<DeaconContext | undefined>;
-    deaconPageViews: boolean;
+    deaconPageViews: ManuallyValidatedOption<boolean>;
   }
 }
 
@@ -81,8 +81,16 @@ export function load(app: Application): void {
     help:
       'Set to false to send Deacon no page views or JavaScript errors from these pages. Chat ' +
       'still works.',
-    type: ParameterType.Boolean,
+    // Mixed rather than Boolean: TypeDoc turns any value of a Boolean option into true or
+    // false, so "false" in a config file would quietly mean true.
+    type: ParameterType.Mixed,
+    configFileOnly: true,
     defaultValue: true,
+    validate(value) {
+      if (typeof value !== 'boolean') {
+        throw new Error(`${NAME}: the "deaconPageViews" option must be true or false.`);
+      }
+    },
   });
 
   let tag = '';

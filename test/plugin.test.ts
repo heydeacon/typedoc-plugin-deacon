@@ -60,6 +60,16 @@ describe('@heydeacon/typedoc-plugin', () => {
     ]);
   });
 
+  it('refuses a deaconPageViews that is not true or false', async () => {
+    // @ts-expect-error -- a typedoc.json can hold a string
+    const { errors, pages } = await generateDocs({ deaconKey: 'pk_test123', deaconPageViews: 'false' });
+
+    expect({ errors, pages: pages.size }).toEqual({
+      errors: ['@heydeacon/typedoc-plugin: the "deaconPageViews" option must be true or false.'],
+      pages: 0,
+    });
+  });
+
   it.each([
     ['a string', 'plan=pro'],
     ['an array', ['docs']],
