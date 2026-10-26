@@ -17,6 +17,18 @@ declare module 'typedoc' {
 const NAME = '@heydeacon/typedoc-plugin';
 const LOADER_SRC = 'https://heydeacon.com/widget/v1/loader.js';
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isScalar(value: unknown): value is string | number | boolean {
+  return typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean';
+}
+
+function isContext(value: unknown): value is DeaconContext {
+  return isRecord(value) && Object.values(value).every(isScalar);
+}
+
 /** A value escaped for an HTML attribute in double quotes. */
 function escapeAttribute(value: string): string {
   return value
@@ -50,6 +62,14 @@ export function load(app: Application): void {
       'every page. Anyone can read them in the page, so never put a secret here.',
     type: ParameterType.Mixed,
     configFileOnly: true,
+    validate(value) {
+      if (value !== undefined && !isContext(value)) {
+        throw new Error(
+          `${NAME}: the "deaconContext" option must be an object whose values are strings, ` +
+            'numbers or booleans.',
+        );
+      }
+    },
   });
 
   let tag = '';

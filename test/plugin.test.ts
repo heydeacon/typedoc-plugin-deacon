@@ -53,6 +53,24 @@ describe('@heydeacon/typedoc-plugin', () => {
   });
 
   it.each([
+    ['a string', 'plan=pro'],
+    ['an array', ['docs']],
+    ['an object with a nested value', { plan: { tier: 'pro' } }],
+    ['an object with a null value', { plan: null }],
+  ])('refuses a context that is %s', async (_case, deaconContext) => {
+    // @ts-expect-error -- a typedoc.json can hold any of these
+    const { errors, pages } = await generateDocs({ deaconKey: 'pk_test123', deaconContext });
+
+    expect({ errors, pages: pages.size }).toEqual({
+      errors: [
+        '@heydeacon/typedoc-plugin: the "deaconContext" option must be an object whose ' +
+          'values are strings, numbers or booleans.',
+      ],
+      pages: 0,
+    });
+  });
+
+  it.each([
     ['missing', {}],
     ['empty, as from an unset environment variable', { deaconKey: '' }],
     ['blank', { deaconKey: '   ' }],
