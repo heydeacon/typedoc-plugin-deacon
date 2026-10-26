@@ -1,28 +1,32 @@
 import { describe, expect, it } from 'vitest';
 import { generateDocs, loaderAttributesInHead, loaderTagsInHead } from './docs.js';
 
+/** The project's front page, which every option shows on. */
+function indexPage(pages: Map<string, string>): string {
+  return pages.get('index.html') ?? '';
+}
+
 describe('@heydeacon/typedoc-plugin', () => {
   it('adds the tag from Install to the head of every page', async () => {
     const { pages } = await generateDocs({ deaconKey: 'pk_test123' });
+    const tag =
+      '<script src="https://heydeacon.com/widget/v1/loader.js" data-key="pk_test123" async></script>';
 
-    expect(pages.size).toBeGreaterThan(1);
-
-    for (const [path, page] of pages) {
-      expect({ path, tags: loaderTagsInHead(page) }).toEqual({
-        path,
-        tags: [
-          '<script src="https://heydeacon.com/widget/v1/loader.js" data-key="pk_test123" async></script>',
-        ],
-      });
-    }
+    expect(
+      Object.fromEntries([...pages].map(([path, page]) => [path, loaderTagsInHead(page)])),
+    ).toEqual({
+      'classes/Thing.html': [tag],
+      'functions/greet.html': [tag],
+      'hierarchy.html': [tag],
+      'index.html': [tag],
+      'modules.html': [tag],
+    });
   });
 
   it('trims spaces pasted around the key', async () => {
     const { pages } = await generateDocs({ deaconKey: '  pk_test123\n' });
 
-    expect(loaderAttributesInHead(pages.get('index.html') ?? '')[0]?.['data-key']).toBe(
-      'pk_test123',
-    );
+    expect(loaderAttributesInHead(indexPage(pages))[0]?.['data-key']).toBe('pk_test123');
   });
 
   it('passes context to Deacon as the data-context attribute', async () => {
@@ -31,7 +35,7 @@ describe('@heydeacon/typedoc-plugin', () => {
       deaconContext: { site: 'docs', version: '3.2', beta: true },
     });
 
-    expect(loaderAttributesInHead(pages.get('index.html') ?? '')).toEqual([
+    expect(loaderAttributesInHead(indexPage(pages))).toEqual([
       {
         src: 'https://heydeacon.com/widget/v1/loader.js',
         'data-key': 'pk_test123',
@@ -47,7 +51,7 @@ describe('@heydeacon/typedoc-plugin', () => {
       deaconContext: { note: '</script><b>"hi" &amp;</b>' },
     });
 
-    expect(loaderAttributesInHead(pages.get('index.html') ?? '')[0]?.['data-context']).toBe(
+    expect(loaderAttributesInHead(indexPage(pages))[0]?.['data-context']).toBe(
       '{"note":"</script><b>\\"hi\\" &amp;</b>"}',
     );
   });
@@ -55,14 +59,17 @@ describe('@heydeacon/typedoc-plugin', () => {
   it('holds back page views with the data-no-page-views attribute', async () => {
     const { pages } = await generateDocs({ deaconKey: 'pk_test123', deaconPageViews: false });
 
-    expect(loaderTagsInHead(pages.get('index.html') ?? '')).toEqual([
+    expect(loaderTagsInHead(indexPage(pages))).toEqual([
       '<script src="https://heydeacon.com/widget/v1/loader.js" data-key="pk_test123" data-no-page-views async></script>',
     ]);
   });
 
   it('refuses a deaconPageViews that is not true or false', async () => {
-    // @ts-expect-error -- a typedoc.json can hold a string
-    const { errors, pages } = await generateDocs({ deaconKey: 'pk_test123', deaconPageViews: 'false' });
+    const { errors, pages } = await generateDocs({
+      deaconKey: 'pk_test123',
+      // @ts-expect-error -- a typedoc.json can hold a string
+      deaconPageViews: 'false',
+    });
 
     expect({ errors, pages: pages.size }).toEqual({
       errors: ['@heydeacon/typedoc-plugin: the "deaconPageViews" option must be true or false.'],

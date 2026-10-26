@@ -15,7 +15,7 @@ declare module 'typedoc' {
   }
 }
 
-const NAME = '@heydeacon/typedoc-plugin';
+const PACKAGE_NAME = '@heydeacon/typedoc-plugin';
 const LOADER_SRC = 'https://heydeacon.com/widget/v1/loader.js';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -69,7 +69,7 @@ export function load(app: Application): void {
     validate(value) {
       if (value !== undefined && !isContext(value)) {
         throw new Error(
-          `${NAME}: the "deaconContext" option must be an object whose values are strings, ` +
+          `${PACKAGE_NAME}: the "deaconContext" option must be an object whose values are strings, ` +
             'numbers or booleans.',
         );
       }
@@ -88,7 +88,7 @@ export function load(app: Application): void {
     defaultValue: true,
     validate(value) {
       if (typeof value !== 'boolean') {
-        throw new Error(`${NAME}: the "deaconPageViews" option must be true or false.`);
+        throw new Error(`${PACKAGE_NAME}: the "deaconPageViews" option must be true or false.`);
       }
     },
   });
@@ -102,7 +102,7 @@ export function load(app: Application): void {
 
     if (key === '') {
       app.logger.error(
-        `${NAME}: the "deaconKey" option is missing. In Deacon, open Install (the button at ` +
+        `${PACKAGE_NAME}: the "deaconKey" option is missing. In Deacon, open Install (the button at ` +
           'the top of the dashboard) and copy the data-key value from the snippet. It starts ' +
           'with pk_.',
       );
