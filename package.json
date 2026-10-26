@@ -1,0 +1,60 @@
+{
+  "name": "@heydeacon/typedoc-plugin",
+  "version": "1.0.0",
+  "description": "TypeDoc plugin that adds Deacon, an AI support chat that answers from your docs, to every page.",
+  "keywords": [
+    "typedoc",
+    "typedoc-plugin",
+    "deacon",
+    "chat widget",
+    "support",
+    "ai",
+    "chatbot",
+    "ai-chatbot",
+    "ask-ai",
+    "support-chat"
+  ],
+  "homepage": "https://heydeacon.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/heydeacon/typedoc-plugin-deacon.git"
+  },
+  "bugs": {
+    "url": "https://github.com/heydeacon/typedoc-plugin-deacon/issues"
+  },
+  "author": "Deacon <hello@heydeacon.com> (https://heydeacon.com)",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    }
+  },
+  "files": [
+    "lib"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "prepack": "npm run build"
+  },
+  "peerDependencies": {
+    "typedoc": "0.28.x"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@types/jsdom": "^30.0.0",
+    "@types/node": "^24.19.2",
+    "jsdom": "^30.1.3",
+    "typedoc": "^0.28.20",
+    "typescript": "~6.0.3",
+    "vitest": "^5.0.5"
+  }
+}
