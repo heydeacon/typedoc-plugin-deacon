@@ -1,8 +1,16 @@
 import { Application, JSX, ParameterType } from 'typedoc';
+import type { ManuallyValidatedOption } from 'typedoc';
+
+/**
+ * Details about the reader that Deacon takes into account when it answers, the same on every
+ * page. Up to 12 keys, each value a string, number or boolean.
+ */
+export type DeaconContext = Record<string, string | number | boolean>;
 
 declare module 'typedoc' {
   export interface TypeDocOptionMap {
     deaconKey: string;
+    deaconContext: ManuallyValidatedOption<DeaconContext | undefined>;
   }
 }
 
@@ -18,9 +26,13 @@ function escapeAttribute(value: string): string {
     .replaceAll('>', '&gt;');
 }
 
-/** The tag Install gives, with the attributes in its order. */
-function loaderTag(key: string): string {
-  return `<script src="${LOADER_SRC}" data-key="${escapeAttribute(key)}" async></script>`;
+/** The tag Install gives, with any of its other attributes between the key and async. */
+function loaderTag(attributes: Record<string, string>): string {
+  const rendered = Object.entries(attributes)
+    .map(([name, value]) => ` ${name}="${escapeAttribute(value)}"`)
+    .join('');
+
+  return `<script src="${LOADER_SRC}"${rendered} async></script>`;
 }
 
 /** TypeDoc calls this once when it loads the plugin named in the `plugin` option. */
@@ -29,6 +41,15 @@ export function load(app: Application): void {
     name: 'deaconKey',
     help: 'Your Deacon key: the data-key value in the snippet on Install. It starts with pk_.',
     type: ParameterType.String,
+  });
+
+  app.options.addDeclaration({
+    name: 'deaconContext',
+    help:
+      'Details about the reader that Deacon takes into account when it answers, the same on ' +
+      'every page. Anyone can read them in the page, so never put a secret here.',
+    type: ParameterType.Mixed,
+    configFileOnly: true,
   });
 
   let tag = '';
@@ -48,7 +69,12 @@ export function load(app: Application): void {
       return;
     }
 
-    tag = loaderTag(key);
+    const context = app.options.getValue('deaconContext');
+
+    tag = loaderTag({
+      'data-key': key,
+      ...(context === undefined ? {} : { 'data-context': JSON.stringify(context) }),
+    });
   });
 
   app.renderer.hooks.on('head.end', () => JSX.createElement(JSX.Raw, { html: tag }));

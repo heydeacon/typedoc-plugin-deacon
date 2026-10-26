@@ -25,6 +25,22 @@ describe('@heydeacon/typedoc-plugin', () => {
     );
   });
 
+  it('passes context to Deacon as the data-context attribute', async () => {
+    const { pages } = await generateDocs({
+      deaconKey: 'pk_test123',
+      deaconContext: { site: 'docs', version: '3.2', beta: true },
+    });
+
+    expect(loaderAttributesInHead(pages.get('index.html') ?? '')).toEqual([
+      {
+        src: 'https://heydeacon.com/widget/v1/loader.js',
+        'data-key': 'pk_test123',
+        'data-context': '{"site":"docs","version":"3.2","beta":true}',
+        async: '',
+      },
+    ]);
+  });
+
   it.each([
     ['missing', {}],
     ['empty, as from an unset environment variable', { deaconKey: '' }],
