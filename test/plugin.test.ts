@@ -24,4 +24,21 @@ describe('@heydeacon/typedoc-plugin', () => {
       'pk_test123',
     );
   });
+
+  it.each([
+    ['missing', {}],
+    ['empty, as from an unset environment variable', { deaconKey: '' }],
+    ['blank', { deaconKey: '   ' }],
+  ])('stops the build when the key is %s', async (_case, options) => {
+    const { errors, pages } = await generateDocs(options);
+
+    expect({ errors, pages: pages.size }).toEqual({
+      errors: [
+        '@heydeacon/typedoc-plugin: the "deaconKey" option is missing. In Deacon, open ' +
+          'Install (the button at the top of the dashboard) and copy the data-key value from ' +
+          'the snippet. It starts with pk_.',
+      ],
+      pages: 0,
+    });
+  });
 });

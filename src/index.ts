@@ -1,5 +1,4 @@
-import { JSX, ParameterType } from 'typedoc';
-import type { Application } from 'typedoc';
+import { Application, JSX, ParameterType } from 'typedoc';
 
 declare module 'typedoc' {
   export interface TypeDocOptionMap {
@@ -7,6 +6,7 @@ declare module 'typedoc' {
   }
 }
 
+const NAME = '@heydeacon/typedoc-plugin';
 const LOADER_SRC = 'https://heydeacon.com/widget/v1/loader.js';
 
 /** A value escaped for an HTML attribute in double quotes. */
@@ -31,7 +31,25 @@ export function load(app: Application): void {
     type: ParameterType.String,
   });
 
-  app.renderer.hooks.on('head.end', () =>
-    JSX.createElement(JSX.Raw, { html: loaderTag(app.options.getValue('deaconKey').trim()) }),
-  );
+  let tag = '';
+
+  // Every option has been read by now. An error here stops the typedoc command before it
+  // converts anything.
+  app.on(Application.EVENT_BOOTSTRAP_END, () => {
+    const key = app.options.getValue('deaconKey').trim();
+
+    if (key === '') {
+      app.logger.error(
+        `${NAME}: the "deaconKey" option is missing. In Deacon, open Install (the button at ` +
+          'the top of the dashboard) and copy the data-key value from the snippet. It starts ' +
+          'with pk_.',
+      );
+
+      return;
+    }
+
+    tag = loaderTag(key);
+  });
+
+  app.renderer.hooks.on('head.end', () => JSX.createElement(JSX.Raw, { html: tag }));
 }
