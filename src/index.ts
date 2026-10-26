@@ -32,6 +32,6 @@ export function load(app: Application): void {
   });
 
   app.renderer.hooks.on('head.end', () =>
-    JSX.createElement(JSX.Raw, { html: loaderTag(app.options.getValue('deaconKey')) }),
+    JSX.createElement(JSX.Raw, { html: loaderTag(app.options.getValue('deaconKey').trim()) }),
   );
 }

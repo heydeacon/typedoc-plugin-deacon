@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { generateDocs, loaderTagsInHead } from './docs.js';
+import { generateDocs, loaderAttributesInHead, loaderTagsInHead } from './docs.js';
 
 describe('@heydeacon/typedoc-plugin', () => {
   it('adds the tag from Install to the head of every page', async () => {
@@ -15,5 +15,13 @@ describe('@heydeacon/typedoc-plugin', () => {
         ],
       });
     }
+  });
+
+  it('trims spaces pasted around the key', async () => {
+    const { pages } = await generateDocs({ deaconKey: '  pk_test123\n' });
+
+    expect(loaderAttributesInHead(pages.get('index.html') ?? '')[0]?.['data-key']).toBe(
+      'pk_test123',
+    );
   });
 });
